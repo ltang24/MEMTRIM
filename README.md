@@ -1,136 +1,356 @@
 # MEMTRIM
 
 <p align="center">
-  <strong>Mitigating inference-time overreliance in agentic memory</strong>
+  <b>Mitigating inference-time overreliance in agentic memory</b>
 </p>
 
-An anonymous research-code release accompanying an ICLR submission, providing a
-compact reference implementation of the core method and a synthetic RQ1 example.
+<p align="center">
+  A compact reference implementation accompanying an anonymous ICLR submission.
+</p>
 
 <p align="center">
   <a href="#overview">Overview</a> ·
+  <a href="#key-observation">Key Observation</a> ·
   <a href="#method">Method</a> ·
+  <a href="#data">Data</a> ·
   <a href="#quick-start">Quick Start</a> ·
-  <a href="#evaluation">Evaluation</a> ·
-  <a href="#repository-structure">Repository Structure</a>
+  <a href="#command-reference">Commands</a> ·
+  <a href="#minimal-rq1-evaluation">Evaluation</a>
 </p>
+
+---
 
 ## Overview
 
-Memory can be highly relevant to the current query while still carrying
-context-specific information that should not be reused. Shared entities or
-circumstances alone do not establish that a past conclusion still applies.
+Agentic memory allows language-model agents to reuse information from previous
+interactions. However, a retrieved memory can remain highly similar to the
+current query while the information that determines the correct answer has
+changed.
+
+In this setting, the memory is still relevant enough to be retrieved, but its
+previous reasoning or conclusion may no longer apply. Reusing it without
+distinguishing reusable from non-reusable evidence can therefore hurt current
+inference.
 
 <p align="center">
-  <img src="assets/memtrim_intro.png" alt="Relevant retrieved memory can carry context-specific information that misleads the current query." width="95%">
+  <img src="assets/memtrim_intro.png" width="95%" alt="Illustration of memory overreliance">
 </p>
 
-MEMTRIM is a plug-and-play layer around an existing agentic memory system. It
-transforms retrieved memories before context construction, giving current-query
-evidence priority. The underlying retriever remains responsible for retrieval.
+We refer to this failure mode as **memory overreliance**.
+
+MEMTRIM is designed to reduce this effect by explicitly separating evidence
+that is already present in the current query, evidence that conflicts with the
+current query, and useful information that exists only in memory.
+
+---
+
+## Key Observation
+
+Our empirical analysis studies how the effect of memory changes as the amount
+of evidence duplicated between the current query and retrieved memory varies.
+
+<p align="center">
+  <img src="assets/rq3_duplication.png" width="96%" alt="Effect of duplicated evidence on memory performance">
+</p>
+
+In the figure above:
+
+- the **x-axis** shows the fraction of evidence duplicated between the current
+  query and retrieved memory;
+- the **y-axis** shows the accuracy change relative to the corresponding
+  no-memory setting;
+- negative values indicate that adding memory hurts accuracy.
+
+The strongest degradation appears under **partial / intermediate duplication**.
+When overlap is very small, memory has limited influence. As duplication
+increases, the retrieved memory becomes influential enough to steer the model,
+even though some answer-relevant information may still differ. Performance
+recovers as duplication approaches full overlap.
+
+This observation motivates MEMTRIM: repeated evidence should not automatically
+receive additional influence simply because it appears again in retrieved
+memory.
+
+---
 
 ## Method
 
+MEMTRIM is a plug-and-play layer around an existing memory system. The base
+memory system continues to store complete memories and perform retrieval;
+MEMTRIM operates at memory write time and after retrieval, before the resulting
+context is passed to the language model.
+
 <p align="center">
-  <img src="assets/memtrim_method.png" alt="MEMTRIM write-time evidence indexing and read-time evidence partitioning, outcome handling, and context construction." width="98%">
+  <img src="assets/memtrim_method.png" width="98%" alt="Overview of the MEMTRIM mechanism">
 </p>
 
-**Write time:** memory → evidence units + task signature + support evidence +
-stored outcome → trie-backed evidence index.
+A stored memory is represented as
 
-**Read time:** retrieved memory + current query → shared / conflicting /
-memory-only evidence → context construction.
+```text
+m = (E_m, tau_m, H_m, o_m)
+```
 
-A memory is represented as `m = (E_m, tau_m, H_m, o_m)`: canonical key-value
-evidence `E_m`, task signature `tau_m`, support evidence `H_m` (a subset of `E_m`),
-and stored outcome `o_m`. Each evidence unit is indexed independently under
-canonical key → value → memory IDs. This minimal implementation accepts already
-structured records and memory IDs supplied by an external retriever.
+where:
+
+| Symbol | Meaning |
+|---|---|
+| `E_m` | Canonical evidence units extracted from the stored interaction |
+| `tau_m` | Task signature describing what the interaction asks the model to determine |
+| `H_m` | Evidence supporting the stored outcome |
+| `o_m` | Stored outcome |
+
+Each evidence unit is represented as a canonical key-value pair:
+
+```text
+e = (key, value)
+```
+
+### Write time
+
+MEMTRIM decomposes each memory into evidence units and inserts them independently
+into a trie-backed evidence index.
+
+```text
+Stored memory
+    ↓
+Evidence units + task signature + support evidence + stored outcome
+    ↓
+Trie-backed evidence index
+```
+
+The complete memory remains in the original memory store. The trie is an
+additional evidence-level index and does **not** replace the base retriever.
+
+### Read time
+
+The underlying memory system first retrieves its usual candidate memories.
+MEMTRIM then compares their evidence with the current query.
+
+```text
+Current query + retrieved memories
+    ↓
+Partition evidence
+    ↓
+Shared / Conflicting / Memory-only
+    ↓
+Support-aware outcome handling
+    ↓
+Non-redundant memory context
+```
+
+The main rules are:
 
 | Component | MEMTRIM behavior |
-| --- | --- |
-| Shared evidence | Do not repeat |
-| Conflicting evidence | Current query takes precedence |
-| Memory-only evidence | Retain |
-| Stored outcome | Suppress if supporting evidence conflicts |
+|---|---|
+| **Shared evidence** | Do not repeat it in the memory context |
+| **Conflicting evidence** | Remove the memory value; the current query takes precedence |
+| **Memory-only evidence** | Retain useful additional information |
+| **Stored outcome** | Suppress it if evidence supporting that outcome conflicts with the current query |
+| **Repeated retained evidence** | Emit identical evidence only once |
 
-Shared evidence matches the query's key and value; conflicting evidence has the
-same key but a different value; memory-only keys are absent from the query.
-Conflicting memory evidence is removed. A conflict on a support key suppresses
-both the stored outcome and its evidence representation. Otherwise, matching
-task signatures retain the outcome; task-mismatched outcomes can be reused as
-evidence only through an explicitly supplied typed `outcome_evidence` representation.
+If the stored and current tasks differ, a previous outcome can only be reused
+when it has an explicit evidence representation. Otherwise, it is omitted.
 
-Context construction emits identical evidence once and preserves multiple values
-from one memory. If different memories provide inconsistent value sets for a key
-absent from the query, all values for that key are withheld. Ordering is deterministic.
+---
+
+## Data
+
+### Datasets used in the paper
+
+The full study evaluates memory overreliance under three representative forms of
+answer-relevant change.
+
+| Dataset | Setting | What changes? | Memory-overreliance scenario |
+|---|---|---|---|
+| **RippleEdits** | Outdated knowledge | Entity / world state | A previously correct stored fact becomes outdated |
+| **CounterLogic** | Query change | Current question | A similar scenario is revisited with a different question |
+| **CLADDER-anti** | Premise change | Answer-relevant premise | An intervention changes the premise supporting the previous answer |
+
+Although the source of the change differs across datasets, they share the same
+basic structure: much of the current query remains similar to the stored
+interaction, while the information that determines the correct answer has
+changed.
+
+### Match vs. mismatch
+
+Evaluation examples are divided into two groups:
+
+| Split | Definition |
+|---|---|
+| **Match** | The answer-relevant condition remains unchanged, so the stored answer still applies |
+| **Mismatch** | The answer-relevant condition changes, so the stored answer should no longer be reused |
+
+This distinction allows us to measure whether a memory method removes harmful
+reuse under mismatch while preserving useful memory under match.
+
+### Included toy data
+
+This minimal repository includes:
+
+```text
+data/rq1_toy.jsonl
+```
+
+The file contains a small synthetic dataset used to demonstrate the RQ1 metric
+implementation.
+
+Each JSONL record contains:
+
+| Field | Description |
+|---|---|
+| `id` | Example identifier |
+| `split` | `match` or `mismatch` |
+| `gold_answer` | Ground-truth answer |
+| `no_memory_prediction` | Prediction produced without retrieved memory |
+| `memory_prediction` | Prediction after memory is introduced |
+
+The bundled examples are **synthetic**. They are included only to demonstrate
+the evaluation code and metric definitions. They are **not** the paper's full
+experimental datasets and are **not** paper results.
+
+---
 
 ## Quick Start
 
-Python 3.10+ is recommended. The implementation uses only the Python standard
-library; no package installation is required, and `requirements.txt` is empty.
-Replace the placeholder with the anonymous repository URL:
+The minimal implementation uses only the Python standard library.
 
-```sh
+**Recommended:** Python 3.10+
+
+### 1. Clone the repository
+
+```bash
 git clone <ANONYMOUS_REPOSITORY_URL>
 cd MEMTRIM
 ```
 
-Run the demo from the repository root:
+### 2. Check the package
 
-```sh
+```bash
+python -c "import memtrim; print('MEMTRIM import successful')"
+```
+
+Expected output:
+
+```text
+MEMTRIM import successful
+```
+
+### 3. Run the MEMTRIM demo
+
+```bash
 python scripts/demo.py
 ```
 
-The demo prints the evidence partitions, outcome decisions, and final contexts
-for two cases:
+The demo constructs one stored memory and evaluates two cases.
 
-- **Match:** supporting evidence remains unchanged, so the stored outcome is retained.
-- **Mismatch:** answer-relevant supporting evidence changes, so the previous outcome is suppressed.
+**Match**
 
-## Evaluation
+The answer-supporting evidence remains unchanged, so the previous outcome may
+remain available.
 
-### Minimal RQ1 evaluation
+**Mismatch**
 
-```sh
+Answer-supporting evidence changes, so the previous outcome is suppressed while
+useful memory-only evidence is retained.
+
+### 4. Run the minimal RQ1 evaluator
+
+```bash
 python scripts/run_rq1_minimal.py
 ```
 
-This runs a small synthetic example of the RQ1 evaluation protocol using saved
-predictions, without LLM inference. It reports separately for match and mismatch:
+This computes no-memory accuracy, memory accuracy, and prediction-transition
+metrics separately for match and mismatch examples.
 
-- No-memory accuracy and memory accuracy.
-- Correct-to-wrong and wrong-to-correct transition counts and rates.
+### 5. Run the context-merging tests
 
-Accuracy uses exact equality with the gold answer. Each transition rate is its
-count divided by the total number of examples in that split.
+```bash
+python -m unittest tests/test_context_merge.py
+```
 
-The JSONL examples are synthetic and are provided only to illustrate the
-evaluation code and metric definitions. They are not paper results and are
-not intended to reproduce Table 1.
+The tests cover:
+
+- legitimate multi-valued evidence;
+- identical evidence across multiple memories;
+- evidence deduplication;
+- unresolved conflicting values across memories.
+
+
+| Metric | Definition |
+|---|---|
+| **No-memory accuracy** | Accuracy before memory is introduced |
+| **Memory accuracy** | Accuracy after memory is introduced |
+| **Correct → Wrong (`✓→✗`)** | Prediction was correct without memory and becomes incorrect after adding memory |
+| **Wrong → Correct (`✗→✓`)** | Prediction was incorrect without memory and becomes correct after adding memory |
+
+
+
+---
+
+## Experimental Setup in the Paper
+
+The full study evaluates the phenomenon and the mitigation across multiple
+datasets, memory organizations, and model backbones.
+
+| Component | Setting |
+|---|---|
+| **Datasets** | RippleEdits, CounterLogic, CLADDER-anti |
+| **Memory systems** | Mem0, A-Mem, MemGPT, Graphiti |
+| **Evaluation groups** | Match / Mismatch |
+| **Main metrics** | Accuracy, correct→wrong, wrong→correct |
+| **Overlap analysis** | Query-memory overlap |
+| **Controlled analysis** | Evidence-duplication level |
+| **Models** | One open-weight model and one API-based model |
+
+The complete paper additionally evaluates mitigation baselines, ablations,
+strong-memory cases, adversarial memory settings, and runtime overhead.
+
+This repository is intentionally a **compact reference implementation of the
+core MEMTRIM mechanism**. It does not include the full external-memory-system
+integrations, complete baseline suite, attack experiments, or the complete
+paper reproduction pipeline.
+
+---
 
 ## Repository Structure
 
 ```text
 MEMTRIM/
-├── .gitignore                # Local artifacts and environment files
-├── README.md                 # Method and usage
-├── requirements.txt          # Empty; standard library only
 ├── assets/
-│   ├── memtrim_intro.png      # Motivation figure
-│   └── memtrim_method.png     # Method figure
-├── memtrim/
-│   ├── __init__.py            # Public package exports
-│   ├── schema.py              # Evidence, memory, query, and result dataclasses
-│   ├── trie.py                # Evidence-level key/value index
-│   └── core.py                # Memory transformation and context merging
-├── scripts/
-│   ├── demo.py                # Deterministic match/mismatch demonstration
-│   └── run_rq1_minimal.py     # Synthetic RQ1 metric evaluation
+│   ├── memtrim_intro.png
+│   ├── memtrim_method.png
+│   └── rq3_duplication.png
+│
 ├── data/
-│   └── rq1_toy.jsonl          # Eight synthetic prediction examples
-└── tests/
-    └── test_context_merge.py  # Context-merging regression checks
+│   └── rq1_toy.jsonl
+│
+├── memtrim/
+│   ├── __init__.py
+│   ├── core.py
+│   ├── schema.py
+│   └── trie.py
+│
+├── scripts/
+│   ├── demo.py
+│   └── run_rq1_minimal.py
+│
+├── tests/
+│   └── test_context_merge.py
+│
+├── .gitignore
+├── README.md
+└── requirements.txt
 ```
 
-.
+### Core files
+
+| File | Purpose |
+|---|---|
+| `memtrim/schema.py` | Dataclasses for evidence, memories, parsed queries, and transformation results |
+| `memtrim/trie.py` | Minimal trie-backed evidence index |
+| `memtrim/core.py` | Write-time indexing and read-time MEMTRIM context construction |
+| `scripts/demo.py` | Small executable match/mismatch example |
+| `scripts/run_rq1_minimal.py` | Minimal RQ1 metric implementation |
+| `data/rq1_toy.jsonl` | Synthetic examples for the minimal evaluator |
+| `tests/test_context_merge.py` | Regression tests for context merging behavior |
+
