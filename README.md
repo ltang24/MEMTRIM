@@ -4,9 +4,6 @@
   <b>Mitigating inference-time overreliance in agentic memory</b>
 </p>
 
-<p align="center">
-  A compact reference implementation accompanying an anonymous ICLR submission.
-</p>
 
 <p align="center">
   <a href="#overview">Overview</a> ·
