@@ -1,0 +1,8 @@
+{"id": "mismatch-1", "split": "mismatch", "gold_answer": "A", "no_memory_prediction": "A", "memory_prediction": "B"}
+{"id": "mismatch-2", "split": "mismatch", "gold_answer": "B", "no_memory_prediction": "B", "memory_prediction": "C"}
+{"id": "mismatch-3", "split": "mismatch", "gold_answer": "C", "no_memory_prediction": "C", "memory_prediction": "C"}
+{"id": "mismatch-4", "split": "mismatch", "gold_answer": "D", "no_memory_prediction": "A", "memory_prediction": "B"}
+{"id": "match-1", "split": "match", "gold_answer": "A", "no_memory_prediction": "A", "memory_prediction": "A"}
+{"id": "match-2", "split": "match", "gold_answer": "B", "no_memory_prediction": "B", "memory_prediction": "B"}
+{"id": "match-3", "split": "match", "gold_answer": "C", "no_memory_prediction": "D", "memory_prediction": "C"}
+{"id": "match-4", "split": "match", "gold_answer": "D", "no_memory_prediction": "B", "memory_prediction": "B"}
