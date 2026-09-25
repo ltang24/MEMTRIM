@@ -10,8 +10,7 @@
   <a href="#key-observation">Key Observation</a> ·
   <a href="#method">Method</a> ·
   <a href="#data">Data</a> ·
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="#command-reference">Commands</a> ·
+  <a href="#quick-start">Quick Start</a> .
   <a href="#minimal-rq1-evaluation">Evaluation</a>
 </p>
 
