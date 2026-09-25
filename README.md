@@ -133,18 +133,4 @@ MEMTRIM/
     └── test_context_merge.py  # Context-merging regression checks
 ```
 
-## Scope
-
-This repository provides a compact reference implementation of the core method
-and minimal RQ1 evaluation. The minimal release does not include:
-
-- External memory-system integrations.
-- Baseline implementations.
-- RQ2 or RQ3 analyses.
-- Later evaluation experiments.
-- Memory attack experiments.
-- Full paper reproduction pipelines.
-
-## Anonymous review
-
-Identifying metadata has been intentionally omitted for double-blind review.
+.
