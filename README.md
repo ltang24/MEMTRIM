@@ -39,13 +39,6 @@ Servers you need for the full runs:
 | MemGPT | `pip install letta && letta server` (port 8283) |
 | Graphiti | nothing (embedded Kuzu); or set `memory.graphiti.uri` for Neo4j |
 
-## Quick check (offline, ~1 s)
-
-```bash
-python -m unittest discover -s tests            # 24 tests: trie, Eq. 1, ablations, parser, case studies, stats
-python -m memtrim.data.build --encoder hash --out-dir data/processed_smoke   # needs data/raw, see below
-python scripts/run.py --config configs/smoke.yaml && python -m memtrim.report results/smoke
-```
 
 `configs/smoke.yaml` uses a mock LLM and a local dense store; it checks that
 every stage runs, and its numbers mean nothing.
