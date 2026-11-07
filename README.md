@@ -297,13 +297,6 @@ datasets, memory organizations, and model backbones.
 | **Controlled analysis** | Evidence-duplication level |
 | **Models** | One open-weight model and one API-based model |
 
-The complete paper additionally evaluates mitigation baselines, ablations,
-strong-memory cases, adversarial memory settings, and runtime overhead.
-
-This repository is intentionally a **compact reference implementation of the
-core MEMTRIM mechanism**. It does not include the full external-memory-system
-integrations, complete baseline suite, attack experiments, or the complete
-paper reproduction pipeline.
 
 ---
 
