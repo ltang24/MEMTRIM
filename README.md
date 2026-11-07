@@ -58,20 +58,6 @@ python -m memtrim.data.build --dataset all      # Appendix C -> data/processed/*
 bash scripts/run_all.sh                         # everything below, resumable
 ```
 
-Before a full run, try any config with `--limit 5` to confirm your servers work.
-
-| Paper | Command | Output |
-|---|---|---|
-| Table 1 (RQ1) | `scripts/run.py --config configs/main_{qwen,gpt}.yaml` → `memtrim.report` | rows `No Mem.` / backbone in `results/<run>/tables.md` |
-| Table 2 (Mem0) / Tables 3–4 | same runs (all baselines × 4 backbones) | `tables.md`, `tables.tex`, `summary.csv` |
-| Fig. 2 / Fig. 8 (RQ2) | `python -m memtrim.experiments.rq2 results/<run>` | `fig_rq2_<dataset>.pdf`, `rq2_<dataset>.json` |
-| Fig. 3 / Fig. 9 (RQ3) | `python -m memtrim.experiments.rq3 --config configs/rq3.yaml` | `fig_rq3_<dataset>.pdf`, `rq3_report.json` |
-| Fig. 5 (ablations) | `scripts/run.py --config configs/ablation_qwen.yaml` → `report --ablation` | `fig5_ablation.pdf` |
-| Fig. 6 (attacks) | `python -m memtrim.experiments.attack --config configs/attack.yaml` | `fig6_attack.pdf` |
-| Fig. 7 (runtime) | `scripts/run.py --config configs/runtime_qwen.yaml` → `report --runtime` | `fig7_runtime.pdf` |
-| App. B.4 case studies | `tests/test_method.py::CaseStudies`, `Eq1Tests` | – |
-
-
 
 ## Code map
 
