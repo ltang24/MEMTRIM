@@ -1,3 +1,5 @@
+"""Tests for Eq. (1), ablations, the parser, the case studies (App. B.4),
+statistics and the RQ3 query builder."""
 
 import json
 import unittest

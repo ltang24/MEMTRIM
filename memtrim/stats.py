@@ -1,4 +1,15 @@
+"""Statistical tests used in §2.
 
+* ``two_lines``  - Simonsohn (2018) two-lines test for a U / inverted-U
+  relationship: interrupted regression with the breakpoint chosen by the
+  "Robin Hood" procedure; the shape is supported when both slopes have
+  opposite signs and are each significant.
+* ``quadratic``  - OLS with a quadratic term (reported alongside, as in §2).
+* ``overlap_tests`` - RQ2: compares overlap of successful vs failed cases.
+  Mann-Whitney U on raw overlap, a one-sided test that failures lie closer
+  to the centre of the range, and the two-lines test of P(failure | overlap)
+  for an inverted U.
+"""
 
 from __future__ import annotations
 

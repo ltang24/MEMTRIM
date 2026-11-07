@@ -1,4 +1,13 @@
+"""RQ2 (Figure 2 / Figure 8): where do memory-induced failures occur?
 
+Uses the predictions of an RQ1 run (methods ``no_memory`` and ``memory``).
+Among TD-Dup cases that are correct without memory:
+  success = still correct with memory, failure = became wrong (✓→✗).
+Query-memory overlap = content-word Jaccard between the current query and the
+top-retrieved stored interaction, excluding the stored answer.
+
+Usage: python -m memtrim.experiments.rq2 results/<run> [--dataset rippleedits]
+"""
 
 from __future__ import annotations
 

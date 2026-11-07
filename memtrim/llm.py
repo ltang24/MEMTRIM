@@ -1,4 +1,19 @@
+"""Unified chat-LLM client with an on-disk cache and timing.
 
+Backends
+--------
+* ``openai``  - any OpenAI-compatible endpoint. Use this for GPT models
+  (``OPENAI_API_KEY``) and for open-weight models served by vLLM
+  (``base_url: http://localhost:8000/v1``).
+* ``mock``    - deterministic, offline rule-based backend used only by the
+  unit tests and ``--smoke`` runs. It is NOT a model and its outputs carry
+  no experimental meaning.
+
+All calls use deterministic decoding by default (temperature 0). The cache key
+covers the model, messages and decoding parameters, so re-running an
+experiment with the same config reproduces the same outputs and does not
+re-query the API.
+"""
 
 from __future__ import annotations
 

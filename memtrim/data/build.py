@@ -1,3 +1,19 @@
+"""Deterministic construction of TA / TD-Dup memory pairs (Appendix C).
+
+No LLM is used anywhere in this file. Labels come from benchmark annotations
+or fixed rules; sentence encoders are used only to find related candidates.
+
+Output: one JSONL per dataset with records
+
+    {id, pair_id, dataset, condition: "TA"|"TD", group,
+     query, question, gold, aliases, answer_type,
+     memory: {id, text, answer},
+     controlled: {...}   # structured units used by the RQ3 controlled study}
+
+Usage:
+    python -m memtrim.data.build --dataset all --raw-dir data/raw --out-dir data/processed
+"""
+
 from __future__ import annotations
 
 import argparse

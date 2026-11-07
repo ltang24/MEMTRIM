@@ -1,4 +1,4 @@
-
+# Section 4.3 / Figure 6: memory attacks, fixed retrieval budget k=16 (shaded region n >= k/2).
 run_name: attack_qwen
 output_dir: results
 data_dir: data/processed

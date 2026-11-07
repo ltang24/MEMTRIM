@@ -1,4 +1,5 @@
-
+# RQ1 (Table 1) + mitigation (Tables 2-4) with the API backbone.
+# Uses the OpenAI API (export OPENAI_API_KEY).
 run_name: main_gpt
 output_dir: results
 data_dir: data/processed

@@ -1,4 +1,9 @@
+"""Sentence encoder wrapper.
 
+``sentence-transformers/all-mpnet-base-v2`` is the encoder named in Appendix C.
+The ``hash`` encoder is a dependency-free bag-of-words fallback used ONLY for
+offline smoke tests; do not use it for reported numbers.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-
+# Offline end-to-end check (no GPU/API). Mock LLM => numbers are meaningless.
 run_name: smoke
 output_dir: results
 data_dir: data/processed_smoke

@@ -1,4 +1,4 @@
-
+"""Text normalisation, content-word overlap (RQ2) and answer scoring."""
 
 from __future__ import annotations
 

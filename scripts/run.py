@@ -1,3 +1,12 @@
+"""Entry point for RQ1 / Tables 1-4 / ablations / runtime.
+
+    python scripts/run.py --config configs/main_qwen.yaml
+    python scripts/run.py --config configs/main_qwen.yaml --limit 20   # quick check
+
+Other experiments:
+    python -m memtrim.experiments.rq3    --config configs/rq3.yaml
+    python -m memtrim.experiments.attack --config configs/attack.yaml
+"""
 
 from __future__ import annotations
 

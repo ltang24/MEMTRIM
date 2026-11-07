@@ -1,4 +1,5 @@
-
+# Figure 7: wall-clock reasoning time, backbone vs MEMTRIM (LLM cache bypassed).
+# Run on an otherwise idle server. Report: python -m memtrim.report results/runtime_qwen --runtime
 run_name: runtime_qwen
 output_dir: results
 data_dir: data/processed

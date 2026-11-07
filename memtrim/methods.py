@@ -1,4 +1,12 @@
+"""Inference methods compared in §2 and §4.
 
+Every method receives the SAME items retrieved by the base memory system and
+differs only in how they are filtered, compressed or used (Table 2 caption).
+
+Baselines are re-implementations from the cited papers' descriptions; the
+prompts and hyper-parameters below are the ones used by this code and are
+listed in the config so they can be reported.
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,9 @@
+"""Offline mock LLM responses for unit tests and ``--smoke`` runs.
 
+This is a heuristic text processor, not a model. It exists so the whole
+pipeline (data -> memory -> methods -> metrics -> tables/figures) can be
+exercised without GPUs or API keys. Numbers produced with it are meaningless.
+"""
 
 from __future__ import annotations
 

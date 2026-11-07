@@ -1,4 +1,5 @@
-
+# RQ3 (Figure 3 = RippleEdits, Figure 9 = CounterLogic). Duplicate for the GPT backbone by swapping llm.
+run_name: rq3_qwen
 output_dir: results
 data_dir: data/processed
 datasets:

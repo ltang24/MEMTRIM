@@ -1,3 +1,4 @@
+"""Data structures for canonical evidence and memory transformations (§3.1)."""
 
 from __future__ import annotations
 

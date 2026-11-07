@@ -1,4 +1,6 @@
-
+# Figure 5: read-time ablations of MEMTRIM (Qwen backbone).
+# Paper panels: Mem0 on all three datasets, Graphiti on CounterLogic.
+# Report: python -m memtrim.report results/ablation_qwen --ablation
 run_name: ablation_qwen
 output_dir: results
 data_dir: data/processed

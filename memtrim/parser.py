@@ -1,3 +1,22 @@
+"""Instruction-based evidence parser and canonicaliser (§3.1, App. A.1).
+
+Pipeline for one interaction (or query):
+1. A fixed parser prompt extracts typed evidence records
+   (entity, attribute, value_type, value, span), a task signature
+   (operation, target), the answer-support set H_m and, for memories, Type(o_m).
+2. Structural validation; ungrounded units (span not found in the input) are
+   discarded. On an invalid output, retry once with the validation error.
+3. Keys are canonicalised: exact match first; otherwise a few existing keys
+   with the same value type and a similar entity/attribute are retrieved and
+   the parser is asked whether the new key is equivalent to one of them.
+   Unclear -> keep separate. Task signatures use the same procedure.
+4. Values are normalised by type (boolean / numeric / temporal / categorical);
+   free-text values use the same equivalence check, restricted to values
+   already indexed under the same key.
+
+Parsing is done once per memory at write time and cached by the caller.
+Decoding is deterministic (temperature 0) and uses JSON mode.
+"""
 
 from __future__ import annotations
 

@@ -1,3 +1,4 @@
+"""Illustrate RQ1 metrics with synthetic predictions, not paper results."""
 
 from __future__ import annotations
 
