@@ -1,5 +1,3 @@
-"""Write-time indexing (§3.2) and read-time replicate-aware context
-construction (§3.3, Eq. 1, App. A.1)."""
 
 from __future__ import annotations
 
