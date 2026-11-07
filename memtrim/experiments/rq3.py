@@ -1,20 +1,4 @@
-"""RQ3 (Figure 3 / Figure 9): controlled evidence overlap.
 
-Each TD-Dup memory is decomposed into evidence units (from the benchmark
-structure, see ``controlled`` in the processed data). The memory store is held
-fixed; the current query repeats a fraction rho of the memory's units:
-
-  * units are ordered: always-present, then non-support (seeded shuffle), then
-    answer-support units last; the first round(rho * n) are copied verbatim;
-  * a support unit not yet copied appears in its changed (TD) form;
-  * once every support unit is copied, the query matches the stored setting
-    (TA): the question and gold answer switch to the stored ones.
-
-At each level Delta Acc = Acc_mem - Acc_no-mem; non-monotonicity is tested with
-a quadratic term and the two-lines test (U-shape) on per-item Delta.
-
-Usage: python -m memtrim.experiments.rq3 --config configs/rq3.yaml
-"""
 
 from __future__ import annotations
 
