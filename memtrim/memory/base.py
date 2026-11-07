@@ -1,12 +1,3 @@
-"""Common interface over the four memory systems in §2.
-
-Every backend stores complete interactions through its own write path and
-retrieves with its own mechanism. Each returned item is linked back to the
-interaction it came from (``interaction_id``) so that MEMTRIM - which keeps a
-separate, write-time evidence index keyed by interaction - can process exactly
-the memories the base system retrieved (App. A.1: the trie is never used as an
-additional retriever).
-"""
 
 from __future__ import annotations
 
