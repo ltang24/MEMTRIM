@@ -1,14 +1,3 @@
-"""Tables 1-4 and Figure 5 from prediction files.
-
-Metrics (per dataset x backend x method):
-  TA / TD-Dup accuracy  : mean and std over seeds (%).
-  ✓→✗ / ✗→✓ (TD-Dup)    : % of TD-Dup cases whose prediction changes from
-                           correct to wrong / wrong to correct relative to
-                           the no-memory prediction of the same item and seed.
-
-Usage: python -m memtrim.report results/<run>  [--ablation]
-"""
-
 from __future__ import annotations
 
 import argparse
