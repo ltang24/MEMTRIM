@@ -1,10 +1,3 @@
-"""Adapters for Mem0, A-Mem, MemGPT (Letta) and Graphiti, plus a local dense
-store used for offline smoke tests.
-
-Each adapter is created per memory store (one store = one retrieval group of
-one condition). Heavy imports happen inside constructors so that only the
-library you actually run needs to be installed.
-"""
 
 from __future__ import annotations
 
