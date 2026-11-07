@@ -6,3 +6,7 @@ __pycache__/
 venv/
 .vscode/
 .idea/
+.cache/
+results/
+data/raw/
+data/processed_smoke/

@@ -1,0 +1,66 @@
+
+output_dir: results
+data_dir: data/processed
+datasets:
+- rippleedits
+- counterlogic
+limit: null
+seeds:
+- 0
+- 1
+- 2
+encoder: sentence-transformers/all-mpnet-base-v2
+llm:
+  backend: openai
+  model: qwen
+  base_url: http://localhost:8000/v1
+  api_key_env: VLLM_API_KEY
+  temperature: 0.0
+  max_tokens: 64
+  cache_dir: .cache/llm
+  extra_body:
+    chat_template_kwargs:
+      enable_thinking: false
+parser_llm: null
+memory_llm: null
+parser:
+  n_candidates: 5
+  candidate_sim: 0.6
+  max_retries: 1
+memory:
+  backends:
+  - mem0
+  - amem
+  - memgpt
+  - graphiti
+  top_k: 5
+  pool_k: 15
+  store_size: 20
+  mem0:
+    infer: true
+    encoder: sentence-transformers/all-mpnet-base-v2
+    embedding_dims: 768
+    path: .cache/mem0
+  amem:
+    encoder: all-MiniLM-L6-v2
+    evo_threshold: 100
+  memgpt:
+    base_url: http://localhost:8283
+    n_core: 1
+    letta_model: null
+    letta_embedding: letta/letta-free
+  graphiti:
+    encoder: sentence-transformers/all-mpnet-base-v2
+    path: .cache/graphiti
+levels:
+- 0.0
+- 0.1
+- 0.2
+- 0.3
+- 0.4
+- 0.5
+- 0.6
+- 0.7
+- 0.8
+- 0.9
+- 1.0

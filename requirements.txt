@@ -1,0 +1,21 @@
+# Core (method, data construction, metrics, figures)
+numpy>=2.0
+scipy>=1.13
+scikit-learn>=1.5
+pandas>=2.2
+matplotlib>=3.8
+pyyaml>=6.0
+tqdm>=4.66
+openai>=1.40
+sentence-transformers>=3.0
+transformers>=4.44
+torch>=2.3
+
+# Memory systems (install the ones you run). Versions tested for API compatibility:
+mem0ai==2.2.1
+graphiti-core[kuzu]==0.31.2
+letta-client==1.12.1          # MemGPT: also needs a running Letta server (pip install letta; letta server)
+agentic-memory @ git+https://github.com/agiresearch/A-mem.git
+
+# Baselines
+llmlingua==0.2.2

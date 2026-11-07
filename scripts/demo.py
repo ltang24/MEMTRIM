@@ -1,4 +1,3 @@
-"""Demonstrate matching and conflicting queries with deterministic toy evidence."""
 
 from __future__ import annotations
 

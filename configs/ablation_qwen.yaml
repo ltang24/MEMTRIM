@@ -1,0 +1,71 @@
+
+run_name: ablation_qwen
+output_dir: results
+data_dir: data/processed
+datasets:
+- rippleedits
+- counterlogic
+- cladder
+limit: null
+seeds:
+- 0
+- 1
+- 2
+encoder: sentence-transformers/all-mpnet-base-v2
+llm:
+  backend: openai
+  model: qwen
+  base_url: http://localhost:8000/v1
+  api_key_env: VLLM_API_KEY
+  temperature: 0.0
+  max_tokens: 64
+  cache_dir: .cache/llm
+  extra_body:
+    chat_template_kwargs:
+      enable_thinking: false
+parser_llm: null
+memory_llm: null
+parser:
+  n_candidates: 5
+  candidate_sim: 0.6
+  max_retries: 1
+memory:
+  backends:
+  - mem0
+  - graphiti
+  top_k: 5
+  pool_k: 15
+  store_size: 20
+  mem0:
+    infer: true
+    encoder: sentence-transformers/all-mpnet-base-v2
+    embedding_dims: 768
+    path: .cache/mem0
+  amem:
+    encoder: all-MiniLM-L6-v2
+    evo_threshold: 100
+  memgpt:
+    base_url: http://localhost:8283
+    n_core: 1
+    letta_model: null
+    letta_embedding: letta/letta-free
+  graphiti:
+    encoder: sentence-transformers/all-mpnet-base-v2
+    path: .cache/graphiti
+methods:
+- no_memory
+- memtrim
+- memtrim-keep_shared
+- memtrim-keep_conflicts
+- memtrim-keep_old_answer
+- memtrim-ignore_task_change
+- memtrim-embedding_match
+params:
+  answer_max_tokens: 64
+  mmr_lambda: 0.5
+  sim_threshold: 0.5
+  recomp_model: fangyuan/nq_extractive_compressor
+  recomp_top_sentences: 3
+  llmlingua_model: microsoft/llmlingua-2-xlm-roberta-large-meetingbank
+  llmlingua_rate: 0.5
+  device: cpu

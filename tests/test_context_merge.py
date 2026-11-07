@@ -1,6 +1,4 @@
-"""Focused regression checks for merging evidence across stored memories."""
 
-import unittest
 
 from memtrim import EvidenceUnit, MemTrim, MemoryRecord, ParsedQuery
 
