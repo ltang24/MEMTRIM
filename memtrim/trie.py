@@ -1,12 +1,4 @@
-"""Trie-backed evidence index (§3.2).
 
-Each canonical key is split into segments (entity | attribute | value type)
-and inserted as a path; the value is the final edge. Identical evidence lands
-on the same leaf, units sharing a key prefix share internal nodes, and
-different values of the same key branch at the last level. A leaf records the
-memories containing that unit and whether the unit is in each memory's
-support set H_m. Complete memories are not stored here.
-"""
 
 from __future__ import annotations
 
