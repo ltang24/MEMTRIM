@@ -1,18 +1,4 @@
-"""Experiment runner shared by RQ1, Tables 2-4, ablations and runtime.
 
-For every (dataset, memory backend, seed):
-  1. Items are grouped into memory stores: one store per (condition, retrieval
-     group), split into chunks of at most ``store_size`` interactions.
-     The paired stored interaction of every item in the store is written
-     (seed-dependent order); other items' memories act as natural distractors.
-  2. MEMTRIM parses every stored interaction once at write time (cached) and
-     indexes it; queries are parsed once at read time.
-  3. For each query the base system retrieves ``pool_k`` items; every method
-     sees the same ranked list (top ``top_k`` unless the method re-ranks).
-  4. One JSON line per (item, method) is written to
-     ``<out>/preds/<dataset>__<backend>__seed<s>.jsonl``. Finished files are
-     skipped on re-run, so interrupted runs resume.
-"""
 
 from __future__ import annotations
 
