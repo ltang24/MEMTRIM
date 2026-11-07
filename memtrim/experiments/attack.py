@@ -1,24 +1,4 @@
-"""§4.3 / Figure 6: memory attacks with a fixed retrieval budget.
 
-For each TD-Dup item, n misleading entries asserting the stale stored answer
-are written into the item's store (n in {0,1,2,4,8,16}); all items in a store
-are attacked at once. Retrieval budget k is fixed (default 16, so the shaded
-region of Fig. 6 is n >= k/2). Re-implementations, following each paper's
-threat model at the level described in §4.3:
-
-* PoisonedRAG (Zou et al., 2025) - black-box: injected text = S ⊕ I with
-  S = the target query (ensures retrieval) and I = a statement of the stale
-  answer; written directly to the memory store.
-* MINJA (Dong et al., 2026) - query-only: the attacker sends queries carrying
-  an indication prompt that steers the agent to the stale answer; the agent's
-  own (query, answer) records are stored through the normal write path, with
-  the indication prompt removed (progressive shortening, final stage).
-* ShadowMerge (Luo et al., 2026) - graph memory: episodes asserting the stale
-  relation(s) of the stored interaction, phrased as relation updates, so the
-  graph accumulates conflicting relation channels.
-
-Usage: python -m memtrim.experiments.attack --config configs/attack.yaml
-"""
 
 from __future__ import annotations
 
