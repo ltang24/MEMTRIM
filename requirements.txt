@@ -1,21 +1,20 @@
-# Core (method, data construction, metrics, figures)
-numpy>=2.0
-scipy>=1.13
-scikit-learn>=1.5
-pandas>=2.2
-matplotlib>=3.8
-pyyaml>=6.0
-tqdm>=4.66
-openai>=1.40
-sentence-transformers>=3.0
-transformers>=4.44
-torch>=2.3
-
-# Memory systems (install the ones you run). Versions tested for API compatibility:
+torch==2.5.1+cu121
+--extra-index-url https://download.pytorch.org/whl/cu121
+transformers==4.57.6
+tokenizers==0.22.2
+huggingface_hub==0.36.2
+accelerate==1.1.1
+sentence-transformers==3.3.1
 mem0ai==2.2.1
-graphiti-core[kuzu]==0.31.2
-letta-client==1.12.1          # MemGPT: also needs a running Letta server (pip install letta; letta server)
-agentic-memory @ git+https://github.com/agiresearch/A-mem.git
-
-# Baselines
-llmlingua==0.2.2
+faiss-cpu==1.15.1
+chromadb==1.5.9
+litellm==1.108.4
+rank-bm25==0.2.2
+nltk==3.10.4
+scikit-learn==1.9.1
+numpy==2.4.6
+openai==3.48.0
+posthog==7.86.4
+pydantic==2.14.3
+qdrant-client==1.20.0
+git+https://github.com/agiresearch/A-mem.git@ceffb860f0712bbae97b184d440df62bc910ca8d
