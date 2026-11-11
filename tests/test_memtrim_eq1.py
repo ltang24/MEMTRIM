@@ -4,9 +4,9 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from memtrim.memtrim import AblationFlags, build_memtrim_block, build_query_context, classify_memory, merge_contexts, transform_memory
-from memtrim.schema import EvidenceUnit, ParsedRecord, TaskSignature
-from memtrim.trie import Trie
+from memtrim.core.readtime import AblationFlags, build_memtrim_block, build_query_context, classify_memory, merge_contexts, transform_memory
+from memtrim.core.schema import EvidenceUnit, ParsedRecord, TaskSignature
+from memtrim.core.trie import Trie
 
 
 def unit(entity, attribute, value, value_type="free_text", multi_valued=False):

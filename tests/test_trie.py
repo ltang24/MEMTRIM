@@ -4,8 +4,8 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from memtrim.schema import EvidenceUnit
-from memtrim.trie import Trie
+from memtrim.core.schema import EvidenceUnit
+from memtrim.core.trie import Trie
 
 
 def unit(entity, attribute, value, value_type="free_text", multi_valued=False):
@@ -65,7 +65,7 @@ class TrieTest(unittest.TestCase):
 
     def test_task_canonicalization(self):
         trie = Trie()
-        from memtrim.schema import TaskSignature
+        from memtrim.core.schema import TaskSignature
 
         t1 = TaskSignature(operation="founding_year", target="founding_year")
         t2 = TaskSignature(operation="Founding_Year", target="Founding_Year")

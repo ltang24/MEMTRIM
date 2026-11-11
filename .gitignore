@@ -11,9 +11,10 @@ venv/
 logs/
 *.log
 
-RippleEdits/
+/RippleEdits/
 
 data/results/
+data/counterlogic/
 data/mem0_stores/
 data/llm_cache.sqlite3*
 *.faiss
@@ -29,3 +30,7 @@ amem_chroma_*/
 *.gguf
 *.onnx
 models/
+data/graphiti_stores/
+*.kuzu
+/CounterLogic/
+/cladder/

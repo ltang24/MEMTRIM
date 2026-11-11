@@ -1,0 +1,43 @@
+seeds: [42]
+n_per_condition: 500
+top_k: 5
+max_store_size: 20
+workers: 16
+store_workers: 4
+output_dir: data/results
+
+datasets:
+  - rippleedits
+  - counterlogic:
+      distance_threshold: 0.2
+      min_cluster_size: 5
+  - cladder:
+      similarity_threshold: 0.85
+      jaccard_threshold: 0.8
+
+memory_systems:
+  - mem0
+  - amem
+  - memgpt
+  - graphiti:
+      max_tokens: 4096
+
+methods:
+  - no_memory
+  - base_memory
+  - facts_only
+  - top1
+  - mmr:
+      pool: 15
+      lambda_: 0.5
+  - sim_filter:
+      threshold: 0.5
+  - recomp:
+      n_sentences: 3
+  - llmlingua2:
+      rate: 0.5
+  - context_faithful
+  - answer_first
+  - micro_act
+  - memtrim:
+      workers: 16

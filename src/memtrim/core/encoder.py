@@ -1,7 +1,5 @@
 import threading
 
-from sentence_transformers import SentenceTransformer
-
 from . import config
 
 _model = None
@@ -12,6 +10,8 @@ def get_encoder():
     global _model
     with _lock:
         if _model is None:
+            from sentence_transformers import SentenceTransformer
+
             _model = SentenceTransformer(config.ENCODER_MODEL_NAME, device=config.MEMTRIM_ENCODER_DEVICE)
         return _model
 

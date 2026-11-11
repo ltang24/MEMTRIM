@@ -5,9 +5,6 @@ import sqlite3
 import threading
 import time
 
-from openai import OpenAI
-from transformers import AutoTokenizer
-
 from . import config
 
 _thread_local = threading.local()
@@ -19,6 +16,8 @@ def get_tokenizer():
     global _tokenizer
     with _tokenizer_lock:
         if _tokenizer is None:
+            from transformers import AutoTokenizer
+
             _tokenizer = AutoTokenizer.from_pretrained(config.MEMTRIM_MODEL_HF_NAME)
         return _tokenizer
 
@@ -64,6 +63,8 @@ class VLLMClient:
     def __init__(self, base_url=None, model=None, max_model_len=None):
         self.base_url = base_url or config.MEMTRIM_BASE_URL
         self.model = model or config.MEMTRIM_MODEL
+        from openai import OpenAI
+
         self.client = OpenAI(base_url=self.base_url, api_key="sk-memtrim")
         self.max_model_len = max_model_len or self._fetch_max_model_len()
 

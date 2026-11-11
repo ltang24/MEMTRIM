@@ -5,7 +5,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from memtrim import parser
+from memtrim.core import parser
 
 
 class FakeClient:

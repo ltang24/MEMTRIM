@@ -1,17 +1,16 @@
 import json
 import os
 import shutil
+from types import SimpleNamespace
 
-from mem0 import Memory
-from mem0.llms.openai import OpenAILLM
-
-from . import config, errors
+from ..core import config, errors
+from .base import MemoryBackend, make_entry
 
 os.environ.setdefault("MEM0_TELEMETRY", "False")
 
 _EMBEDDING_DIMS = 768
 
-_original_generate_response = OpenAILLM.generate_response
+_original_generate_response = None
 
 
 def _normalize_memory_list_json(text):
@@ -35,7 +34,13 @@ def _generate_response_with_normalized_memory_list(self, messages, response_form
     return _normalize_memory_list_json(result)
 
 
-OpenAILLM.generate_response = _generate_response_with_normalized_memory_list
+def _patch_mem0():
+    global _original_generate_response
+    from mem0.llms.openai import OpenAILLM
+
+    if _original_generate_response is None:
+        _original_generate_response = OpenAILLM.generate_response
+        OpenAILLM.generate_response = _generate_response_with_normalized_memory_list
 
 
 def _mem0_config(collection_name, path):
@@ -88,26 +93,29 @@ def _add_with_retry(memory, store_id, interaction):
     return None
 
 
-def build_store(store_id, interactions):
+def open_store(store_id):
+    _patch_mem0()
+    from mem0 import Memory
+
     path = os.path.join(config.MEM0_STORE_DIR, store_id)
     shutil.rmtree(path, ignore_errors=True)
     os.makedirs(path)
-    memory = Memory.from_config(_mem0_config(store_id, path))
-    fragments = []
-    for interaction in interactions:
-        result = _add_with_retry(memory, store_id, interaction)
-        if result is None:
-            continue
-        for entry in result.get("results", []):
-            fragments.append(
-                {
-                    "id": entry["id"],
-                    "text": entry["memory"],
-                    "interaction_id": interaction.interaction_id,
-                    "item_id": interaction.item_id,
-                }
-            )
-    return memory, fragments
+    return Memory.from_config(_mem0_config(store_id, path))
+
+
+def add_interaction(memory, store_id, interaction):
+    result = _add_with_retry(memory, store_id, interaction)
+    if result is None:
+        return []
+    return [
+        {
+            "id": entry["id"],
+            "text": entry["memory"],
+            "interaction_id": interaction.interaction_id,
+            "item_id": interaction.item_id,
+        }
+        for entry in result.get("results", [])
+    ]
 
 
 def retrieve(memory, store_id, query_text, top_k, item_id=None):
@@ -132,3 +140,28 @@ def retrieve(memory, store_id, query_text, top_k, item_id=None):
             last_error = e
     errors.record_failure("mem0", "retrieve", item_id, store_id, last_error)
     return []
+
+
+class Mem0Backend(MemoryBackend):
+    name = "mem0"
+
+    def __init__(self, store_id, **kwargs):
+        super().__init__(store_id)
+        self.memory = open_store(store_id)
+        self.fragments = []
+
+    def add(self, interaction_id, text, answer, item_id=None, group=None, is_primary=True):
+        interaction = SimpleNamespace(
+            interaction_id=interaction_id, text=self.content(text, answer), item_id=item_id, is_primary=is_primary, relation=group
+        )
+        self.fragments.extend(add_interaction(self.memory, self.store_id, interaction))
+
+    def search(self, query, k):
+        hits = retrieve(self.memory, self.store_id, query, k)
+        return [make_entry(h["id"], h["text"], h["interaction_id"], h["score"]) for h in hits]
+
+    def entries(self):
+        return [make_entry(f["id"], f["text"], f["interaction_id"]) for f in self.fragments]
+
+    def close(self):
+        self.memory = None

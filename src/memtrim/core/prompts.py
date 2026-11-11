@@ -153,16 +153,50 @@ def build_task_equiv_messages(new_operation, new_target, candidates):
     ]
 
 
-ANSWER_SYSTEM_PROMPT = """Answer the CURRENT QUESTION using the CURRENT FACT and, if present, the MEMORY block.
-The MEMORY block may contain information from earlier, unrelated interactions. Use it only to the extent it actually helps answer the CURRENT QUESTION about the CURRENT FACT; do not let an old or differently-scoped memory override information explicitly given in the CURRENT FACT.
+ANSWER_SYSTEM_PROMPT = """Answer the CURRENT QUERY. A MEMORY block may follow with information from earlier interactions.
+Use the MEMORY block only to the extent it actually helps answer the CURRENT QUERY; do not let an old or differently-scoped memory override information explicitly given in the CURRENT QUERY.
 Give a short, direct answer with no explanation."""
 
+ANSWER_FORMAT_HINTS = {
+    "yes_no": "Answer with yes or no.",
+    "entity": "Answer with the name or value only.",
+}
 
-def build_answer_messages(current_fact, question, memory_block=None):
-    parts = [f"CURRENT FACT: {current_fact}", f"CURRENT QUESTION: {question}"]
+
+def build_answer_messages(query, memory_block=None, answer_type="entity", instruction=None, extra_sections=None):
+    system = ANSWER_SYSTEM_PROMPT
+    if instruction:
+        system += "\n" + instruction
+    hint = ANSWER_FORMAT_HINTS.get(answer_type)
+    if hint:
+        system += "\n" + hint
+    parts = [f"CURRENT QUERY: {query}"]
     if memory_block:
         parts.append(f"MEMORY:\n{memory_block}")
+    for title, body in extra_sections or []:
+        parts.append(f"{title}:\n{body}")
     return [
-        {"role": "system", "content": ANSWER_SYSTEM_PROMPT},
+        {"role": "system", "content": system},
         {"role": "user", "content": "\n\n".join(parts)},
+    ]
+
+
+CONTEXT_FAITHFUL_INSTRUCTION = """Treat the CURRENT QUERY as ground truth. If a memory disagrees with anything stated in the CURRENT QUERY, ignore that memory."""
+
+ANSWER_FIRST_INSTRUCTION = """An INITIAL ANSWER was produced from the CURRENT QUERY alone. Keep the INITIAL ANSWER unless the MEMORY block is consistent with every fact in the CURRENT QUERY and clearly supports a different answer; only then revise it."""
+
+MICRO_ACT_ANALYSIS_PROMPT = """Compare the MEMORY block with the CURRENT QUERY. Do not answer the query yet.
+List, one per line:
+SAME: facts stated identically in the memory and the query
+CONFLICTING: facts the memory states differently from the query, or a different question the memory answered
+ABSENT: facts in the memory that the query does not mention
+Write "none" for an empty category."""
+
+MICRO_ACT_INSTRUCTION = """A COMPARISON between the MEMORY block and the CURRENT QUERY follows. Use only memory facts listed as SAME or ABSENT; ignore memory facts and stored answers listed as CONFLICTING."""
+
+
+def build_micro_act_analysis_messages(query, memory_block):
+    return [
+        {"role": "system", "content": MICRO_ACT_ANALYSIS_PROMPT},
+        {"role": "user", "content": f"CURRENT QUERY: {query}\n\nMEMORY:\n{memory_block}"},
     ]

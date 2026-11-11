@@ -30,28 +30,3 @@ class ParsedRecord:
     outcome_text: Optional[str] = None
     outcome_evidence: Optional[EvidenceUnit] = None
     parse_ok: bool = True
-
-
-@dataclass
-class StoredInteraction:
-    interaction_id: str
-    text: str
-    relation: str
-    subject_id: str
-    item_id: str
-    is_primary: bool
-
-
-@dataclass
-class Item:
-    item_id: str
-    edit_id: str
-    condition: str
-    relation: str
-    subject_id: str
-    current_fact: str
-    question: str
-    new_target_forms: set
-    memory_text: str
-    unchanged_facts: List[str]
-    store_id: str = ""

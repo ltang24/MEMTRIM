@@ -2,8 +2,8 @@ import json
 import os
 import random
 
-from . import alias, config
-from .schema import Item, StoredInteraction
+from ..core import alias, config
+from .base import TA, TD_DUP, Item, build_stores
 
 
 def _common_prefix_word_count(a_words, b_words):
@@ -86,6 +86,7 @@ def _build_candidate(raw_entry):
         "question": question,
         "new_target_forms": new_target_forms,
         "new_target_display": gold_answers[0]["value"],
+        "new_target_aliases": list(gold_answers[0].get("aliases") or []),
         "old_target": old_target,
         "old_fact_text": old_text,
         "unchanged_facts": _unchanged_facts(raw_entry, config.MAX_UNCHANGED_FACTS),
@@ -101,85 +102,43 @@ def load_candidates():
     return candidates
 
 
-def sample_items(n, seed=config.DEFAULT_SEED):
+def sample_candidates(n, seed):
     candidates = load_candidates()
     rng = random.Random(seed)
     rng.shuffle(candidates)
-    sampled = candidates[: min(n, len(candidates))]
+    return candidates[: min(n, len(candidates))]
 
+
+def memory_of(cand, condition):
+    if condition == TA:
+        return {"text": f"{cand['current_fact']} {cand['question']}", "answer": cand["new_target_display"]}
+    return {"text": f"{cand['old_fact_text']} {cand['question']}", "answer": cand["old_target"]}
+
+
+def make_items(sampled):
     items = []
     for i, cand in enumerate(sampled):
-        edit_id = f"e{i}"
-        tddup_memory_text = f"{cand['old_fact_text']} {cand['question']} {cand['old_target']}."
-        for condition, memory_text in (("TA", _ta_memory_sentence(cand)), ("TD_DUP", tddup_memory_text)):
+        pair_id = f"e{i}"
+        for condition in (TA, TD_DUP):
             items.append(
                 Item(
-                    item_id=f"{edit_id}_{condition}",
-                    edit_id=edit_id,
+                    id=f"{pair_id}_{condition}",
+                    pair_id=pair_id,
+                    dataset="rippleedits",
                     condition=condition,
-                    relation=cand["relation"],
-                    subject_id=cand["subject_id"],
-                    current_fact=cand["current_fact"],
-                    question=cand["question"],
-                    new_target_forms=cand["new_target_forms"],
-                    memory_text=memory_text,
-                    unchanged_facts=list(cand["unchanged_facts"]),
+                    group=cand["relation"],
+                    query=f"{cand['current_fact']} {cand['question']}",
+                    gold=cand["new_target_display"],
+                    aliases=list(cand["new_target_aliases"]),
+                    answer_type="entity",
+                    memory=memory_of(cand, condition),
+                    extra_memories=[{"text": f, "answer": None} for f in cand["unchanged_facts"]],
                 )
             )
     return items
 
 
-def _ta_memory_sentence(cand):
-    return f"{cand['current_fact']} {cand['question']} {_new_target_display(cand)}."
-
-
-def _new_target_display(cand):
-    return cand["new_target_display"]
-
-
-def build_stores(items, max_store_size=config.DEFAULT_MAX_STORE_SIZE):
-    groups = {}
-    for item in items:
-        groups.setdefault((item.relation, item.condition), []).append(item)
-
-    stores = {}
-    for (relation, condition), group_items in groups.items():
-        store_idx = 0
-        current_store_id = f"{relation}__{condition}__{store_idx}"
-        current_interactions = []
-        for item in group_items:
-            new_interactions = [
-                StoredInteraction(
-                    interaction_id=f"{item.item_id}_primary",
-                    text=item.memory_text,
-                    relation=relation,
-                    subject_id=item.subject_id,
-                    item_id=item.item_id,
-                    is_primary=True,
-                )
-            ]
-            for j, fact in enumerate(item.unchanged_facts):
-                new_interactions.append(
-                    StoredInteraction(
-                        interaction_id=f"{item.item_id}_fact{j}",
-                        text=fact,
-                        relation=relation,
-                        subject_id=item.subject_id,
-                        item_id=item.item_id,
-                        is_primary=False,
-                    )
-                )
-
-            if current_interactions and len(current_interactions) + len(new_interactions) > max_store_size:
-                stores[current_store_id] = current_interactions
-                store_idx += 1
-                current_store_id = f"{relation}__{condition}__{store_idx}"
-                current_interactions = []
-
-            current_interactions.extend(new_interactions)
-            item.store_id = current_store_id
-
-        if current_interactions:
-            stores[current_store_id] = current_interactions
-
-    return stores
+def build(n=config.DEFAULT_N_PER_CONDITION, seed=config.DEFAULT_SEED, max_store_size=config.DEFAULT_MAX_STORE_SIZE, **_):
+    items = make_items(sample_candidates(n, seed))
+    stores = build_stores(items, max_store_size)
+    return items, stores
