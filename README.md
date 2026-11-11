@@ -14,7 +14,7 @@
 
 MEMTRIM is a layer placed around an existing agent memory system that indexes each stored entry as evidence units in a trie at write time. At read time it drops retrieved evidence the query already states or contradicts and suppresses the stored answer when its support or the task has changed. MEMTRIM parses and indexes exactly the entries each memory system stores and returns, so it works on top of Mem0, A-Mem, MemGPT (Letta) and Graphiti without changing their write or retrieval paths.
 
-The main experiment builds task-aligned (TA) and task-duplicated (TD-Dup) items from three datasets, writes them into stores of four memory systems, and answers every item with each baseline and with MEMTRIM. Every method for a given item and memory system sees the same retrieved entries.
+The main experiment builds task-aligned (TA) and task-divergent with overlapping evidence (TD-Dup) items from three datasets, writes them into stores of four memory systems, and answers every item with each baseline and with MEMTRIM. Every method for a given item and memory system sees the same retrieved entries.
 
 ## Installation
 
